@@ -76,8 +76,10 @@ fun AppRoot(controller: MediaController?) {
             Box(Modifier.weight(1f)) {
                 when (val s = stack.last()) {
                     Screen.Home -> HomeScreen(
+                        controller,
                         onOpen = { push(Screen.Browse(it)) },
                         onEdit = { push(Screen.Edit(it)) },
+                        onPlaying = { push(Screen.NowPlaying) },
                     )
                     is Screen.Edit -> EditSourceScreen(s.source, onDone = pop)
                     is Screen.Browse -> BrowseScreen(s.source, controller, onPlaying = { push(Screen.NowPlaying) })

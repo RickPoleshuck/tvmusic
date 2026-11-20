@@ -46,6 +46,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import app.tvmusic.browse.Entry
+import app.tvmusic.browse.allTracks
 import app.tvmusic.browse.browserFor
 import app.tvmusic.data.Source
 import app.tvmusic.data.SourceType
@@ -143,6 +144,11 @@ fun BrowseScreen(source: Source, player: Player?, onPlaying: () -> Unit) {
                                 TvButton("Play all (${files.size})", { play(files, 0) }, icon = Icons.Filled.PlayArrow)
                                 TvButton("Shuffle", { play(files, 0, shuffle = true) }, icon = Icons.Filled.Shuffle)
                             }
+                            if (l.entries.any { it.isDir }) {
+                                ShuffleAllButton("Shuffle everything here", player, onPlaying) { onFound ->
+                                    browser.allTracks(crumb.path, onFound).map { it.toMediaItem(crumb.name) }
+                                }
+                            }
                             TvButton("Refresh", { crumb.returnIndex = 0; reload++ }, icon = Icons.Filled.Refresh)
                         }
                     }
@@ -173,7 +179,7 @@ fun BrowseScreen(source: Source, player: Player?, onPlaying: () -> Unit) {
 
 private const val HEADER_ITEMS = 1
 
-private fun Entry.toMediaItem(folder: String): MediaItem {
+fun Entry.toMediaItem(folder: String): MediaItem {
     val uri = playUri!!
     return MediaItem.Builder()
         .setMediaId(uri.toString())

@@ -13,6 +13,7 @@ import com.hierynomus.msfscc.FileAttributes
 import com.hierynomus.protocol.commons.EnumWithValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlin.coroutines.cancellation.CancellationException
 import net.schmizz.sshj.sftp.FileMode
 import java.io.File
 
@@ -36,6 +37,31 @@ private val AUDIO_EXT = setOf(
 fun isAudio(name: String) = name.substringAfterLast('.', "").lowercase() in AUDIO_EXT
 
 private val entryOrder = compareBy<Entry>({ !it.isDir }, { it.name.lowercase() })
+
+/** Guards against symlink loops on SFTP, where directory symlinks are followed. */
+private const val MAX_DEPTH = 32
+
+/**
+ * Every playable file under [path], including all subfolders. [onFound] gets the running total.
+ * A failure listing [path] itself is thrown; unreadable subfolders are skipped.
+ */
+suspend fun Browser.allTracks(path: String = "", onFound: (Int) -> Unit = {}): List<Entry> {
+    val out = mutableListOf<Entry>()
+    suspend fun walk(dir: String, depth: Int) {
+        val entries = if (depth == 0) list(dir) else try {
+            list(dir)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            return
+        }
+        entries.filterTo(out) { !it.isDir }
+        onFound(out.size)
+        if (depth < MAX_DEPTH) for (e in entries) if (e.isDir) walk(e.path, depth + 1)
+    }
+    walk(path, 0)
+    return out
+}
 
 fun browserFor(ctx: Context, source: Source): Browser = when (source.type) {
     SourceType.SFTP -> SftpBrowser(source)

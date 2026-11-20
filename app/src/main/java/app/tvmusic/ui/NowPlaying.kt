@@ -48,6 +48,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.C
 import androidx.media3.common.Player
 import kotlinx.coroutines.delay
 
@@ -57,8 +58,10 @@ data class PlayerSnapshot(
     val title: String = "",
     val subtitle: String = "",
     val artwork: ByteArray? = null,
+    /** Position of the current track within [queue]. */
     val index: Int = 0,
-    val queue: List<String> = emptyList(),
+    /** Tracks in the order they will play (shuffled order when shuffle is on). */
+    val queue: List<QueueItem> = emptyList(),
     val position: Long = 0,
     val duration: Long = 0,
     val shuffle: Boolean = false,
@@ -66,8 +69,24 @@ data class PlayerSnapshot(
     val error: String? = null,
 )
 
+/** [mediaIndex] is the item's index in the player's playlist, used to jump to it. */
+data class QueueItem(val mediaIndex: Int, val title: String)
+
+/** Playlist indices in play order, following the player's shuffle order when shuffle is on. */
+private fun playOrder(p: Player): List<Int> {
+    val t = p.currentTimeline
+    if (t.isEmpty) return emptyList()
+    val shuffle = p.shuffleModeEnabled
+    return generateSequence(t.getFirstWindowIndex(shuffle)) { i ->
+        t.getNextWindowIndex(i, Player.REPEAT_MODE_OFF, shuffle).takeIf { it != C.INDEX_UNSET }
+    }.toList()
+}
+
 private fun snapshot(p: Player): PlayerSnapshot {
     val md = p.mediaMetadata
+    val queue = playOrder(p).map { i ->
+        QueueItem(i, p.getMediaItemAt(i).mediaMetadata.let { (it.title ?: it.displayTitle ?: "").toString() })
+    }
     val artistLine = listOfNotNull(md.artist ?: md.albumArtist, md.albumTitle).joinToString(" — ")
     return PlayerSnapshot(
         hasMedia = p.mediaItemCount > 0,
@@ -75,10 +94,8 @@ private fun snapshot(p: Player): PlayerSnapshot {
         title = (md.title ?: md.displayTitle ?: "").toString(),
         subtitle = artistLine.ifEmpty { md.subtitle?.toString() ?: "" },
         artwork = md.artworkData,
-        index = p.currentMediaItemIndex,
-        queue = (0 until p.mediaItemCount).map { i ->
-            p.getMediaItemAt(i).mediaMetadata.let { (it.title ?: it.displayTitle ?: "").toString() }
-        },
+        index = queue.indexOfFirst { it.mediaIndex == p.currentMediaItemIndex }.coerceAtLeast(0),
+        queue = queue,
         position = p.currentPosition,
         duration = p.duration.coerceAtLeast(0),
         shuffle = p.shuffleModeEnabled,
@@ -183,10 +200,10 @@ fun NowPlayingScreen(s: PlayerSnapshot, player: Player?) {
             val listState = rememberLazyListState()
             LaunchedEffect(s.index) { if (s.queue.isNotEmpty()) listState.animateScrollToItem((s.index - 1).coerceAtLeast(0)) }
             LazyColumn(state = listState, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                itemsIndexed(s.queue) { i, title ->
-                    TvCard({ player?.seekTo(i, 0); player?.play() }, Modifier.fillMaxWidth(), selected = i == s.index) {
+                itemsIndexed(s.queue) { i, item ->
+                    TvCard({ player?.seekTo(item.mediaIndex, 0); player?.play() }, Modifier.fillMaxWidth(), selected = i == s.index) {
                         Text("${i + 1}", Modifier.width(36.dp), color = if (i == s.index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
-                        Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(item.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                 }
             }
