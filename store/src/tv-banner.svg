@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+<defs><linearGradient id="g" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1280" y2="720"><stop offset="0" stop-color="#66BB6A"/><stop offset="1" stop-color="#1B5E20"/></linearGradient></defs>
+<rect width="1280" height="720" fill="url(#g)"/>
+<g transform="translate(51.19999999999993 72.49999999999994) scale(1.1500000000000001)">
+  <g fill="none" stroke="#fff" stroke-opacity="0.07" stroke-width="14">
+    <circle cx="230" cy="250" r="230"/><circle cx="230" cy="250" r="320"/><circle cx="230" cy="250" r="410"/>
+  </g>
+  <circle cx="230" cy="250" r="140" fill="#fff" fill-opacity="0.16"/>
+  <g transform="translate(128 148) scale(8.5)"><path fill="#fff" d="M12,3v10.55c-0.59,-0.34 -1.27,-0.55 -2,-0.55 -2.21,0 -4,1.79 -4,4s1.79,4 4,4 4,-1.79 4,-4V7h4V3h-6z"/></g>
+  <g font-family="Noto Sans" fill="#fff" transform="translate(430 250)">
+    <text y="-24" font-size="100" font-weight="700">TV Music</text>
+    <text y="36" font-size="30" fill-opacity="0.95">Your music library on the big screen</text>
+    <text y="84" font-size="24" fill-opacity="0.75">SFTP · SMB shares · USB &amp; device storage</text>
+  </g>
+</g>
+</svg>
