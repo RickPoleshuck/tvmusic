@@ -1,9 +1,7 @@
 import java.util.Properties
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
@@ -54,8 +52,6 @@ android {
         }
     }
 }
-
-kotlin { compilerOptions { jvmTarget.set(JvmTarget.JVM_17) } }
 
 dependencies {
     val composeBom = platform("androidx.compose:compose-bom:2025.06.00")
