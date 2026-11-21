@@ -5,6 +5,7 @@ import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
@@ -35,8 +36,24 @@ class PlaybackService : MediaSessionService() {
             .setWakeMode(C.WAKE_MODE_NETWORK)
             .build()
         player.addListener(object : Player.Listener {
+            private var failuresInARow = 0
+
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 mediaItem?.mediaId?.takeIf { it.isNotEmpty() }?.let(PlayHistory::recordPlayed)
+            }
+
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                if (isPlaying) failuresInARow = 0
+            }
+
+            // Skip a track that can't be played. Give up after a run of failures (e.g. the server is offline,
+            // or every track fails) so the error stays on screen instead of churning through the whole queue.
+            override fun onPlayerError(error: PlaybackException) {
+                failuresInARow++
+                if (failuresInARow >= minOf(MAX_FAILURES_IN_A_ROW, player.mediaItemCount) || !player.hasNextMediaItem()) return
+                player.seekToNextMediaItem()
+                player.prepare()
+                player.play()
             }
         })
 
@@ -68,5 +85,9 @@ class PlaybackService : MediaSessionService() {
         }
         session = null
         super.onDestroy()
+    }
+
+    private companion object {
+        const val MAX_FAILURES_IN_A_ROW = 10
     }
 }
