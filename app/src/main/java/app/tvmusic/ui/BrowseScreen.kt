@@ -50,7 +50,6 @@ import app.tvmusic.browse.allTracks
 import app.tvmusic.browse.browserFor
 import app.tvmusic.data.PlayHistory
 import app.tvmusic.data.Source
-import app.tvmusic.data.SourceType
 import app.tvmusic.net.describe
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -62,7 +61,7 @@ private sealed interface Load {
     data class Err(val message: String) : Load
 }
 
-private val audioPermission =
+internal val audioPermission =
     if (Build.VERSION.SDK_INT >= 33) Manifest.permission.READ_MEDIA_AUDIO else Manifest.permission.READ_EXTERNAL_STORAGE
 
 @Composable
@@ -78,7 +77,7 @@ fun BrowseScreen(source: Source, player: Player?, onPlaying: () -> Unit) {
 
     var granted by remember {
         mutableStateOf(
-            source.type != SourceType.LIBRARY ||
+            !source.usesMediaLibrary ||
                 ContextCompat.checkSelfPermission(ctx, audioPermission) == PackageManager.PERMISSION_GRANTED
         )
     }

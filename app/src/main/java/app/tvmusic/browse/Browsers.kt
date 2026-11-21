@@ -66,9 +66,14 @@ suspend fun Browser.allTracks(path: String = "", onFound: (Int) -> Unit = {}): L
 fun browserFor(ctx: Context, source: Source): Browser = when (source.type) {
     SourceType.SFTP -> SftpBrowser(source)
     SourceType.SMB -> SmbBrowser(source)
-    SourceType.FOLDER -> TreeBrowser(ctx.applicationContext, source)
+    SourceType.FOLDER ->
+        if (source.usesMediaLibrary) LibraryBrowser(ctx.applicationContext, source.path)
+        else TreeBrowser(ctx.applicationContext, source)
     SourceType.LIBRARY -> LibraryBrowser(ctx.applicationContext)
 }
+
+/** Browses the media library's folders; used to choose a folder on TVs without a system folder picker. */
+fun libraryBrowser(ctx: Context): Browser = LibraryBrowser(ctx.applicationContext)
 
 private class SftpBrowser(private val source: Source) : Browser {
     override suspend fun list(path: String): List<Entry> = withContext(Dispatchers.IO) {
@@ -153,8 +158,11 @@ private class TreeBrowser(private val ctx: Context, source: Source) : Browser {
     }
 }
 
-/** Everything Android's media scanner found, on internal storage and attached USB drives, browsed by folder. */
-private class LibraryBrowser(private val ctx: Context) : Browser {
+/**
+ * Everything Android's media scanner found, on internal storage and attached USB drives, browsed by folder.
+ * [root] (a folder path as listed here, e.g. "Internal storage/Music/") limits it to one folder.
+ */
+private class LibraryBrowser(private val ctx: Context, private val root: String = "") : Browser {
     private data class Track(val folder: String, val name: String, val uri: Uri)
 
     @Volatile private var cache: List<Track>? = null
@@ -192,15 +200,17 @@ private class LibraryBrowser(private val ctx: Context) : Browser {
         if (vol == MediaStore.VOLUME_EXTERNAL_PRIMARY) "Internal storage" else "USB $vol"
 
     override suspend fun list(path: String): List<Entry> = withContext(Dispatchers.IO) {
+        // Listing the start folder rescans, so Refresh picks up newly added music.
         val tracks = (if (path.isEmpty()) null else cache) ?: scan().also { cache = it }
+        val dir = path.ifEmpty { root }
         val dirs = linkedSetOf<String>()
         val files = mutableListOf<Entry>()
         for (t in tracks) {
-            if (!t.folder.startsWith(path)) continue
-            val rest = t.folder.removePrefix(path)
-            if (rest.isEmpty()) files += Entry(t.name, path + t.name, false, t.uri)
+            if (!t.folder.startsWith(dir)) continue
+            val rest = t.folder.removePrefix(dir)
+            if (rest.isEmpty()) files += Entry(t.name, dir + t.name, false, t.uri)
             else dirs += rest.substringBefore('/')
         }
-        (dirs.map { Entry(it, "$path$it/", true) } + files).sortedWith(entryOrder)
+        (dirs.map { Entry(it, "$dir$it/", true) } + files).sortedWith(entryOrder)
     }
 }

@@ -27,9 +27,14 @@ data class Source(
     val domain: String = "",
     // Start folder (SFTP absolute/relative path, SMB path inside share)
     val path: String = "",
-    // Local folder picked with the storage access framework
+    // Local folder picked with the storage access framework. If blank, a FOLDER source is instead the
+    // media library folder in [path], chosen in-app on TVs without a system folder picker.
     val treeUri: String = "",
 ) {
+    /** Reads from Android's media library (needs the audio permission) rather than a granted folder. */
+    val usesMediaLibrary: Boolean
+        get() = type == SourceType.LIBRARY || (type == SourceType.FOLDER && treeUri.isBlank())
+
     val displayName: String
         get() = name.ifBlank {
             when (type) {

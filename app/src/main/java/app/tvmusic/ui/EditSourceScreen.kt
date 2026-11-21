@@ -69,6 +69,7 @@ fun EditSourceScreen(initial: Source, onDone: () -> Unit) {
     var d by remember { mutableStateOf(initial) }
     var status by remember { mutableStateOf<String?>(null) }
     var showPublicKey by remember { mutableStateOf(false) }
+    var showFolderFallback by remember { mutableStateOf(false) }
     val isNew = SourceStore.get(initial.id) == null
     val first = remember { FocusRequester() }
     LaunchedEffect(Unit) { runCatching { first.requestFocus() } }
@@ -91,10 +92,10 @@ fun EditSourceScreen(initial: Source, onDone: () -> Unit) {
     val folderPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri: Uri? ->
         if (uri == null) return@rememberLauncherForActivityResult
         ctx.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        d = d.copy(treeUri = uri.toString(), name = d.name.ifBlank { uri.lastPathSegment?.substringAfterLast(':') ?: "" })
+        d = d.copy(treeUri = uri.toString(), path = "", name = d.name.ifBlank { uri.lastPathSegment?.substringAfterLast(':') ?: "" })
     }
     fun launchSafely(block: () -> Unit) = try { block() } catch (_: ActivityNotFoundException) {
-        status = "This TV has no file picker. Paste the key, generate one, or use “Music on this device”."
+        status = "This TV has no file picker. Paste the key or generate one instead."
     }
 
     Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -165,8 +166,15 @@ fun EditSourceScreen(initial: Source, onDone: () -> Unit) {
                 Field("Start folder inside share (optional)", d.path, { d = d.copy(path = it) })
             }
             SourceType.FOLDER -> {
-                Text(if (d.treeUri.isBlank()) "No folder chosen yet." else "Folder: ${Uri.parse(d.treeUri).lastPathSegment}")
-                TvButton("Choose folder…", { launchSafely { folderPicker.launch(null) } }, icon = Icons.Filled.FileOpen)
+                Text(when {
+                    d.treeUri.isNotBlank() -> "Folder: ${Uri.parse(d.treeUri).lastPathSegment}"
+                    d.path.isNotBlank() -> "Folder: ${d.path.trimEnd('/')}"
+                    else -> "No folder chosen yet."
+                })
+                TvButton("Choose folder…", {
+                    // Many TVs ship without the system folder picker; fall back to choosing from the media library.
+                    try { folderPicker.launch(null) } catch (_: ActivityNotFoundException) { showFolderFallback = true }
+                }, icon = Icons.Filled.FileOpen)
             }
             SourceType.LIBRARY -> {}
         }
@@ -205,6 +213,14 @@ fun EditSourceScreen(initial: Source, onDone: () -> Unit) {
         }
     }
 
+    if (showFolderFallback) LibraryFolderPicker(
+        onPick = { path ->
+            showFolderFallback = false
+            d = d.copy(treeUri = "", path = path, name = d.name.ifBlank { path.trimEnd('/').substringAfterLast('/') })
+        },
+        onDismiss = { showFolderFallback = false },
+    )
+
     if (showPublicKey && d.publicKey.isNotBlank()) {
         val qr = remember(d.publicKey) { qrBitmap(d.publicKey.trim()).asImageBitmap() }
         AlertDialog(
@@ -238,7 +254,7 @@ private fun validate(d: Source): String? = when (d.type) {
         d.share.isBlank() -> "Share name is required"
         else -> null
     }
-    SourceType.FOLDER -> if (d.treeUri.isBlank()) "Choose a folder first" else null
+    SourceType.FOLDER -> if (d.treeUri.isBlank() && d.path.isBlank()) "Choose a folder first" else null
     SourceType.LIBRARY -> null
 }
 
