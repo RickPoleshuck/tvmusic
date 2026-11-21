@@ -1,6 +1,7 @@
 package app.tvmusic
 
 import android.app.Application
+import app.tvmusic.data.PlayHistory
 import app.tvmusic.data.SourceStore
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.security.Security
@@ -13,5 +14,6 @@ class TvMusicApp : Application() {
         Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME)
         Security.addProvider(BouncyCastleProvider())
         SourceStore.init(this)
+        PlayHistory.init(this)
     }
 }

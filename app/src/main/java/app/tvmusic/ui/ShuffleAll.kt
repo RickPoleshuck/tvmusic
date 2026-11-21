@@ -12,14 +12,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import app.tvmusic.data.PlayHistory
 import app.tvmusic.net.describe
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * Gathers tracks with [collect] (which may walk whole folder trees, so it reports progress and can be
- * cancelled by pressing the button again), then plays them all in random order.
+ * cancelled by pressing the button again), then plays them in random order, starting with tracks not
+ * yet played so nothing repeats until everything has had a turn (see [PlayHistory.shuffleOrder]).
  */
 @Composable
 fun ShuffleAllButton(
@@ -55,8 +59,11 @@ fun ShuffleAllButton(
                         items.isEmpty() -> error = "no music found"
                         p == null -> error = "player not ready"
                         else -> {
-                            p.shuffleModeEnabled = true
-                            p.setMediaItems(items, items.indices.random(), 0L)
+                            val byId = items.associateBy { it.mediaId }
+                            val ordered = withContext(Dispatchers.IO) { PlayHistory.shuffleOrder(byId.keys.toList()) }
+                            // The order is already shuffled; player-side shuffle would undo it.
+                            p.shuffleModeEnabled = false
+                            p.setMediaItems(ordered.map(byId::getValue), 0, 0L)
                             p.prepare()
                             p.play()
                             onPlaying()
