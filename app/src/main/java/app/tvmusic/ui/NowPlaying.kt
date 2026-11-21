@@ -55,6 +55,8 @@ import kotlinx.coroutines.delay
 data class PlayerSnapshot(
     val hasMedia: Boolean = false,
     val isPlaying: Boolean = false,
+    /** Playing or about to (e.g. buffering the next track); false once paused, stopped or finished. */
+    val isActive: Boolean = false,
     val title: String = "",
     val subtitle: String = "",
     val artwork: ByteArray? = null,
@@ -91,6 +93,7 @@ private fun snapshot(p: Player): PlayerSnapshot {
     return PlayerSnapshot(
         hasMedia = p.mediaItemCount > 0,
         isPlaying = p.isPlaying,
+        isActive = p.playWhenReady && (p.playbackState == Player.STATE_READY || p.playbackState == Player.STATE_BUFFERING),
         title = (md.title ?: md.displayTitle ?: "").toString(),
         subtitle = artistLine.ifEmpty { md.subtitle?.toString() ?: "" },
         artwork = md.artworkData,

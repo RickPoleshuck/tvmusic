@@ -15,7 +15,7 @@ import app.tvmusic.data.PlayHistory
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 
-/** Owns the player so music keeps going in the background and the remote's media keys work. */
+/** Owns the player so the remote's media keys work. */
 class PlaybackService : MediaSessionService() {
     private var session: MediaSession? = null
 

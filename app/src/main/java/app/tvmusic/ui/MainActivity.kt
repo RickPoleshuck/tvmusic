@@ -14,10 +14,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.media3.session.MediaController
@@ -54,6 +56,8 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onStop() {
+        // Music only plays while the app is on screen; a rotation or other config change doesn't count.
+        if (!isChangingConfigurations) controller.value?.pause()
         controller.value = null
         controllerFuture?.let { MediaController.releaseFuture(it) }
         controllerFuture = null
@@ -69,6 +73,13 @@ fun AppRoot(controller: MediaController?) {
     val player = rememberPlayerSnapshot(controller)
 
     BackHandler(enabled = stack.size > 1) { pop() }
+
+    // Leaving the app pauses playback, and the screensaver counts as leaving, so hold it off while music plays.
+    val view = LocalView.current
+    DisposableEffect(view, player.isActive) {
+        view.keepScreenOn = player.isActive
+        onDispose { view.keepScreenOn = false }
+    }
 
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         // Generous padding keeps everything inside the TV's overscan-safe area.

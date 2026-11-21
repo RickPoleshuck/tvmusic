@@ -6,8 +6,8 @@ An Android TV / Google TV app (Chromecast with Google TV, Google TV sets, Androi
 - **SMB** – SMB2/SMB3 Windows/Samba shares (user/password or guest)
 - **Local files** – "Music on this device" (internal storage + USB drives, via Android's media index) or any folder picked with the system folder picker
 
-Playback runs in a media session service, so music keeps playing in the background, the remote's
-play/pause/next keys work, and seeking works on every source (SFTP/SMB files are streamed with random access, not downloaded).
+Playback runs in a media session service, so the remote's play/pause/next keys work, and seeking works on every source (SFTP/SMB files are streamed with random access, not downloaded).
+Music pauses when you leave the app.
 
 ## SSH keys on a TV
 
