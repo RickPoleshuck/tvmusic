@@ -48,6 +48,7 @@ import androidx.media3.common.Player
 import app.tvmusic.browse.Entry
 import app.tvmusic.browse.allTracks
 import app.tvmusic.browse.browserFor
+import app.tvmusic.data.PlayHistory
 import app.tvmusic.data.Source
 import app.tvmusic.data.SourceType
 import app.tvmusic.net.describe
@@ -149,7 +150,7 @@ fun BrowseScreen(source: Source, player: Player?, onPlaying: () -> Unit) {
                                     browser.allTracks(crumb.path, onFound).map { it.toMediaItem(crumb.name) }
                                 }
                             }
-                            TvButton("Refresh", { crumb.returnIndex = 0; reload++ }, icon = Icons.Filled.Refresh)
+                            TvButton("Refresh", { PlayHistory.clearAll(); crumb.returnIndex = 0; reload++ }, icon = Icons.Filled.Refresh)
                         }
                     }
                     if (l.entries.isEmpty()) item { Text("No folders or audio files here.") }

@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.material.icons.filled.Lan
 import androidx.compose.material.icons.filled.Menu
@@ -108,6 +109,7 @@ fun HomeScreen(player: Player?, onOpen: (Source) -> Unit, onEdit: (Source) -> Un
 @Composable
 private fun ConfigMenu(saved: List<Source>, onEdit: (Source) -> Unit) {
     var open by remember { mutableStateOf(false) }
+    var showAbout by remember { mutableStateOf(false) }
     val firstItem = remember { FocusRequester() }
     val pick: (Source) -> Unit = { open = false; onEdit(it) }
 
@@ -132,7 +134,10 @@ private fun ConfigMenu(saved: List<Source>, onEdit: (Source) -> Unit) {
                         TvButton("Edit ${s.displayName}", { pick(s) }, Modifier.fillMaxWidth(), icon = Icons.Filled.Edit)
                     }
                 }
+                HorizontalDivider(Modifier.padding(vertical = 4.dp))
+                TvButton("About", { open = false; showAbout = true }, Modifier.fillMaxWidth(), icon = Icons.Filled.Info)
             }
         }
     }
+    if (showAbout) AboutDialog(onDismiss = { showAbout = false })
 }

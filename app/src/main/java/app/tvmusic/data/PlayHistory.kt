@@ -27,6 +27,11 @@ object PlayHistory {
         writer.execute { db.insertWithOnConflict("played", null, values, SQLiteDatabase.CONFLICT_REPLACE) }
     }
 
+    /** Forgets every play, so the next shuffle treats all tracks as unplayed. Runs off the calling thread. */
+    fun clearAll() {
+        writer.execute { db.delete("played", null, null) }
+    }
+
     /**
      * Orders [ids] for a shuffle: never-played tracks first in random order, then the rest from least
      * to most recently played. If every track has already been played, their history is cleared and a
