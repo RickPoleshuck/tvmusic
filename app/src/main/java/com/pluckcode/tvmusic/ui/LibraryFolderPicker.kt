@@ -1,4 +1,4 @@
-package app.tvmusic.ui
+package com.pluckcode.tvmusic.ui
 
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -34,8 +34,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
-import app.tvmusic.browse.libraryBrowser
-import app.tvmusic.net.describe
+import com.pluckcode.tvmusic.browse.libraryBrowser
+import com.pluckcode.tvmusic.net.describe
 
 /**
  * In-app folder chooser for TVs without a system folder picker. It browses the folders holding music

@@ -1,4 +1,4 @@
-package app.tvmusic.playback
+package com.pluckcode.tvmusic.playback
 
 import android.content.Intent
 import androidx.annotation.OptIn
@@ -12,7 +12,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
-import app.tvmusic.data.PlayHistory
+import com.pluckcode.tvmusic.data.PlayHistory
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 

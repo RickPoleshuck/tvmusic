@@ -1,4 +1,4 @@
-package app.tvmusic.data
+package com.pluckcode.tvmusic.data
 
 import android.content.ContentValues
 import android.content.Context

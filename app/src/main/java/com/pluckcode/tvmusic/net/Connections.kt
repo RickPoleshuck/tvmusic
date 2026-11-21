@@ -1,9 +1,9 @@
-package app.tvmusic.net
+package com.pluckcode.tvmusic.net
 
-import app.tvmusic.data.SftpAuth
-import app.tvmusic.data.Source
-import app.tvmusic.data.SourceStore
-import app.tvmusic.data.SourceType
+import com.pluckcode.tvmusic.data.SftpAuth
+import com.pluckcode.tvmusic.data.Source
+import com.pluckcode.tvmusic.data.SourceStore
+import com.pluckcode.tvmusic.data.SourceType
 import com.hierynomus.smbj.SMBClient
 import com.hierynomus.smbj.SmbConfig
 import com.hierynomus.smbj.auth.AuthenticationContext

@@ -1,4 +1,4 @@
-package app.tvmusic.ui
+package com.pluckcode.tvmusic.ui
 
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image

@@ -1,4 +1,4 @@
-package app.tvmusic.ui
+package com.pluckcode.tvmusic.ui
 
 import android.content.ComponentName
 import android.os.Bundle
@@ -24,8 +24,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
-import app.tvmusic.data.Source
-import app.tvmusic.playback.PlaybackService
+import com.pluckcode.tvmusic.data.Source
+import com.pluckcode.tvmusic.playback.PlaybackService
 import com.google.common.util.concurrent.ListenableFuture
 
 sealed interface Screen {

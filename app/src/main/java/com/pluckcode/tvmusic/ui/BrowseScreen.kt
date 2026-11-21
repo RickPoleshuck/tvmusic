@@ -1,4 +1,4 @@
-package app.tvmusic.ui
+package com.pluckcode.tvmusic.ui
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -45,12 +45,12 @@ import androidx.core.content.ContextCompat
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
-import app.tvmusic.browse.Entry
-import app.tvmusic.browse.allTracks
-import app.tvmusic.browse.browserFor
-import app.tvmusic.data.PlayHistory
-import app.tvmusic.data.Source
-import app.tvmusic.net.describe
+import com.pluckcode.tvmusic.browse.Entry
+import com.pluckcode.tvmusic.browse.allTracks
+import com.pluckcode.tvmusic.browse.browserFor
+import com.pluckcode.tvmusic.data.PlayHistory
+import com.pluckcode.tvmusic.data.Source
+import com.pluckcode.tvmusic.net.describe
 import kotlin.coroutines.cancellation.CancellationException
 
 private data class Crumb(val path: String, val name: String, var returnIndex: Int = 0)

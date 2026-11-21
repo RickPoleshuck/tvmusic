@@ -1,4 +1,4 @@
-package app.tvmusic.ui
+package com.pluckcode.tvmusic.ui
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Shuffle
@@ -12,8 +12,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import app.tvmusic.data.PlayHistory
-import app.tvmusic.net.describe
+import com.pluckcode.tvmusic.data.PlayHistory
+import com.pluckcode.tvmusic.net.describe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch

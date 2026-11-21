@@ -1,4 +1,4 @@
-package app.tvmusic.ui
+package com.pluckcode.tvmusic.ui
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -51,13 +51,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import app.tvmusic.data.SftpAuth
-import app.tvmusic.data.Source
-import app.tvmusic.data.SourceStore
-import app.tvmusic.data.SourceType
-import app.tvmusic.net.Connections
-import app.tvmusic.net.KeyGen
-import app.tvmusic.net.describe
+import com.pluckcode.tvmusic.data.SftpAuth
+import com.pluckcode.tvmusic.data.Source
+import com.pluckcode.tvmusic.data.SourceStore
+import com.pluckcode.tvmusic.data.SourceType
+import com.pluckcode.tvmusic.net.Connections
+import com.pluckcode.tvmusic.net.KeyGen
+import com.pluckcode.tvmusic.net.describe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

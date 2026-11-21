@@ -1,4 +1,4 @@
-package app.tvmusic.ui
+package com.pluckcode.tvmusic.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,11 +41,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import app.tvmusic.browse.allTracks
-import app.tvmusic.browse.browserFor
-import app.tvmusic.data.Source
-import app.tvmusic.data.SourceStore
-import app.tvmusic.data.SourceType
+import com.pluckcode.tvmusic.browse.allTracks
+import com.pluckcode.tvmusic.browse.browserFor
+import com.pluckcode.tvmusic.data.Source
+import com.pluckcode.tvmusic.data.SourceStore
+import com.pluckcode.tvmusic.data.SourceType
 import kotlin.coroutines.cancellation.CancellationException
 
 fun SourceType.icon() = when (this) {

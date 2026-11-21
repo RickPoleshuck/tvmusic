@@ -1,4 +1,4 @@
-package app.tvmusic.browse
+package com.pluckcode.tvmusic.browse
 
 import android.content.ContentUris
 import android.content.Context
@@ -6,9 +6,9 @@ import android.net.Uri
 import android.os.Build
 import android.provider.DocumentsContract
 import android.provider.MediaStore
-import app.tvmusic.data.Source
-import app.tvmusic.data.SourceType
-import app.tvmusic.net.Connections
+import com.pluckcode.tvmusic.data.Source
+import com.pluckcode.tvmusic.data.SourceType
+import com.pluckcode.tvmusic.net.Connections
 import com.hierynomus.msfscc.FileAttributes
 import com.hierynomus.protocol.commons.EnumWithValue
 import kotlinx.coroutines.Dispatchers

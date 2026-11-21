@@ -10,11 +10,11 @@ val keystoreProps = rootProject.file("keystore.properties").takeIf { it.exists()
     ?.let { f -> Properties().apply { f.inputStream().use(::load) } }
 
 android {
-    namespace = "app.tvmusic"
+    namespace = "com.pluckcode.tvmusic"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "app.tvmusic"
+        applicationId = "com.pluckcode.tvmusic"
         minSdk = 26
         targetSdk = 36
         versionCode = 4

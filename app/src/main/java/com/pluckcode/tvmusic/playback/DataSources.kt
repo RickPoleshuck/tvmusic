@@ -1,6 +1,6 @@
 @file:androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 
-package app.tvmusic.playback
+package com.pluckcode.tvmusic.playback
 
 import android.content.Context
 import android.net.Uri
@@ -12,8 +12,8 @@ import androidx.media3.datasource.DataSourceException
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.TransferListener
-import app.tvmusic.data.SourceStore
-import app.tvmusic.net.Connections
+import com.pluckcode.tvmusic.data.SourceStore
+import com.pluckcode.tvmusic.net.Connections
 import com.hierynomus.msdtyp.AccessMask
 import com.hierynomus.msfscc.fileinformation.FileStandardInformation
 import com.hierynomus.mssmb2.SMB2CreateDisposition

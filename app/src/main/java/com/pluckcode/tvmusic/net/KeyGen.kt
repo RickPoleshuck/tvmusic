@@ -1,4 +1,4 @@
-package app.tvmusic.net
+package com.pluckcode.tvmusic.net
 
 import android.util.Base64
 import org.bouncycastle.crypto.generators.Ed25519KeyPairGenerator

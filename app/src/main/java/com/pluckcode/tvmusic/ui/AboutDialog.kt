@@ -1,4 +1,4 @@
-package app.tvmusic.ui
+package com.pluckcode.tvmusic.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement

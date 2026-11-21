@@ -1,8 +1,8 @@
-package app.tvmusic
+package com.pluckcode.tvmusic
 
 import android.app.Application
-import app.tvmusic.data.PlayHistory
-import app.tvmusic.data.SourceStore
+import com.pluckcode.tvmusic.data.PlayHistory
+import com.pluckcode.tvmusic.data.SourceStore
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.security.Security
 
