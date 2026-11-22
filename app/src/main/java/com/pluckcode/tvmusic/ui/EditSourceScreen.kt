@@ -302,7 +302,11 @@ private fun Field(
         var text by remember { mutableStateOf(TextFieldValue(value, TextRange(0, value.length))) }
         val fr = remember { FocusRequester() }
         LaunchedEffect(Unit) { runCatching { fr.requestFocus() } }
-        val commit = { onChange(text.text); editing = false }
+        // TV keyboards make stray trailing spaces easy to add and impossible to see, so drop them.
+        val commit = {
+            onChange(if (multiLine) text.text.lines().joinToString("\n") { it.trimEnd() }.trimEnd() else text.text.trimEnd())
+            editing = false
+        }
         AlertDialog(
             onDismissRequest = { editing = false },
             properties = DialogProperties(usePlatformDefaultWidth = false),
