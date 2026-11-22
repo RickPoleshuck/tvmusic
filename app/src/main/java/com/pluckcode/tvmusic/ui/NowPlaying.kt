@@ -173,14 +173,14 @@ fun NowPlayingScreen(s: PlayerSnapshot, player: Player?) {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
                 TvIconButton(Icons.Filled.Shuffle, "Shuffle", { player?.shuffleModeEnabled = !s.shuffle }, active = s.shuffle)
                 TvIconButton(Icons.Filled.SkipPrevious, "Previous", { player?.seekToPrevious() })
-                TvIconButton(Icons.Filled.Replay10, "Back 10 seconds", { player?.let { it.seekTo((it.currentPosition - 10_000).coerceAtLeast(0)) } })
+                TvIconButton(Icons.Filled.Replay10, "Back 10 seconds", { player?.let { it.seekTo((it.currentPosition - 10_000).coerceAtLeast(0)) } }, label = "Rewind")
                 TvIconButton(
                     if (s.isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
                     if (s.isPlaying) "Pause" else "Play",
                     { player?.let { if (it.isPlaying) it.pause() else { if (it.playbackState == Player.STATE_IDLE) it.prepare(); it.play() } } },
                     Modifier.focusRequester(playFocus), big = true,
                 )
-                TvIconButton(Icons.Filled.Forward10, "Forward 10 seconds", { player?.let { it.seekTo(it.currentPosition + 10_000) } })
+                TvIconButton(Icons.Filled.Forward10, "Forward 10 seconds", { player?.let { it.seekTo(it.currentPosition + 10_000) } }, label = "Forward")
                 TvIconButton(Icons.Filled.SkipNext, "Next", { player?.seekToNext() })
                 TvIconButton(
                     if (s.repeatMode == Player.REPEAT_MODE_ONE) Icons.Filled.RepeatOne else Icons.Filled.Repeat,
@@ -228,7 +228,7 @@ fun MiniPlayer(s: PlayerSnapshot, player: Player?, onOpen: () -> Unit) {
             }
         }
         TvIconButton(Icons.Filled.SkipPrevious, "Previous", { player?.seekToPrevious() })
-        TvIconButton(if (s.isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow, "Play/pause", {
+        TvIconButton(if (s.isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow, if (s.isPlaying) "Pause" else "Play", {
             player?.let { if (it.isPlaying) it.pause() else it.play() }
         })
         TvIconButton(Icons.Filled.SkipNext, "Next", { player?.seekToNext() })
