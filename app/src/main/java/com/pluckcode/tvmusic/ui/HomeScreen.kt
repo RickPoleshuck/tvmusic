@@ -1,5 +1,6 @@
 package com.pluckcode.tvmusic.ui
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.material.icons.filled.Lan
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.HorizontalDivider
@@ -39,6 +41,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import com.pluckcode.tvmusic.browse.cachedTracks
@@ -46,6 +49,7 @@ import com.pluckcode.tvmusic.browse.browserFor
 import com.pluckcode.tvmusic.data.Source
 import com.pluckcode.tvmusic.data.SourceStore
 import com.pluckcode.tvmusic.data.SourceType
+import com.pluckcode.tvmusic.data.TrackCache
 import kotlin.coroutines.cancellation.CancellationException
 
 fun SourceType.icon() = when (this) {
@@ -64,7 +68,8 @@ fun HomeScreen(player: Player?, onOpen: (Source) -> Unit, onEdit: (Source) -> Un
     LaunchedEffect(Unit) { runCatching { first.requestFocus() } }
 
     Column {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        // Drawn above the list so the menu button's focus label isn't hidden behind the first card.
+        Row(Modifier.fillMaxWidth().zIndex(1f), verticalAlignment = Alignment.CenterVertically) {
             Text("TV Music", style = MaterialTheme.typography.displaySmall, modifier = Modifier.weight(1f))
             ShuffleAllButton("Shuffle all music", player, onPlaying) { onFound ->
                 // Walk every source in turn; one that is offline or unreadable is skipped rather than failing the rest.
@@ -83,6 +88,11 @@ fun HomeScreen(player: Player?, onOpen: (Source) -> Unit, onEdit: (Source) -> Un
                 if (items.isEmpty()) firstError?.let { throw it }
                 items
             }
+            Spacer(Modifier.width(12.dp))
+            TvIconButton(Icons.Filled.Refresh, "Rescan all music", {
+                TrackCache.clearAll()
+                Toast.makeText(ctx, "Music will be rescanned on the next shuffle", Toast.LENGTH_SHORT).show()
+            }, label = "Rescan")
             Spacer(Modifier.width(12.dp))
             ConfigMenu(saved, onEdit)
         }

@@ -66,15 +66,13 @@ suspend fun Browser.allTracks(path: String = "", onFound: (Int) -> Unit = {}): L
 
 /**
  * Like [allTracks] for [path] of [source], but answers straight from [TrackCache] when it has that
- * folder, so repeat shuffles start at once. A cached answer is then rescanned in the background, so
- * newly added music shows up the next time.
+ * folder, so repeat shuffles start at once. The stored list is kept until Refresh clears it.
  */
 suspend fun cachedTracks(ctx: Context, source: Source, path: String = "", onFound: (Int) -> Unit = {}): List<Entry> {
     val app = ctx.applicationContext
     val cached = withContext(Dispatchers.IO) { TrackCache.get(source.id, path) }
     if (cached != null) {
         onFound(cached.size)
-        TrackCache.refresh(source.id, path) { browserFor(app, source).allTracks(path) }
         return cached
     }
     val tracks = browserFor(app, source).allTracks(path, onFound)

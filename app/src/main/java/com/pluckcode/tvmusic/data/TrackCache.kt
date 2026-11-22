@@ -5,11 +5,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.net.Uri
 import com.pluckcode.tvmusic.browse.Entry
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
-import java.util.Collections
+import java.util.concurrent.Executors
 
 /**
  * Remembers every track found under a folder (keyed by source ID and folder path, "" being the source's
@@ -17,9 +13,7 @@ import java.util.Collections
  */
 object TrackCache {
     private lateinit var db: SQLiteDatabase
-    // Outlives any screen, so a refresh keeps going after the shuffle moves on to Now Playing.
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val refreshing = Collections.synchronizedSet(HashSet<Pair<String, String>>())
+    private val writer = Executors.newSingleThreadExecutor()
 
     fun init(ctx: Context) {
         db = Helper(ctx).writableDatabase
@@ -55,27 +49,14 @@ object TrackCache {
         }
     }
 
-    /** Forgets everything stored for [sourceId], e.g. after it is edited or deleted. Runs off the calling thread. */
-    fun clear(sourceId: String) {
-        scope.launch { db.delete("tracks", "source_id = ?", arrayOf(sourceId)) }
+    /** Forgets every stored track, so each source is walked again on its next shuffle. Runs off the calling thread. */
+    fun clearAll() {
+        writer.execute { db.delete("tracks", null, null) }
     }
 
-    /**
-     * Runs [scan] in the background and stores what it finds for [root] of [sourceId]. A failed scan
-     * (source offline, say) keeps the old tracks; one already running for the same folder isn't repeated.
-     */
-    fun refresh(sourceId: String, root: String, scan: suspend () -> List<Entry>) {
-        val key = sourceId to root
-        if (!refreshing.add(key)) return
-        scope.launch {
-            try {
-                val tracks = runCatching { scan() }.getOrNull()
-                // Skip if the source was deleted meanwhile, so its tracks don't come back.
-                if (!tracks.isNullOrEmpty() && SourceStore.get(sourceId) != null) put(sourceId, root, tracks)
-            } finally {
-                refreshing.remove(key)
-            }
-        }
+    /** Forgets everything stored for [sourceId], e.g. after it is edited or deleted. Runs off the calling thread. */
+    fun clear(sourceId: String) {
+        writer.execute { db.delete("tracks", "source_id = ?", arrayOf(sourceId)) }
     }
 
     private class Helper(ctx: Context) : SQLiteOpenHelper(ctx, "track_cache.db", null, 1) {
