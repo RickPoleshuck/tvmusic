@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import com.pluckcode.tvmusic.data.SftpAuth
 import com.pluckcode.tvmusic.data.Source
 import com.pluckcode.tvmusic.data.SourceStore
+import com.pluckcode.tvmusic.data.TrackCache
 import com.pluckcode.tvmusic.data.SourceType
 import com.pluckcode.tvmusic.net.Connections
 import com.pluckcode.tvmusic.net.KeyGen
@@ -187,6 +188,7 @@ fun EditSourceScreen(initial: Source, onDone: () -> Unit) {
                 if (err != null) { status = err; return@TvButton }
                 SourceStore.upsert(d)
                 Connections.invalidate(d.id)
+                TrackCache.clear(d.id)
                 onDone()
             }, icon = Icons.Filled.Save)
             if (d.type == SourceType.SFTP || d.type == SourceType.SMB) {
@@ -208,7 +210,7 @@ fun EditSourceScreen(initial: Source, onDone: () -> Unit) {
             }
             TvButton("Cancel", onDone)
             if (!isNew) TvButton("Delete", {
-                SourceStore.remove(d.id); Connections.invalidate(d.id); onDone()
+                SourceStore.remove(d.id); Connections.invalidate(d.id); TrackCache.clear(d.id); onDone()
             }, icon = Icons.Filled.Delete)
         }
     }

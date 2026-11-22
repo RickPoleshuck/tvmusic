@@ -41,7 +41,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import com.pluckcode.tvmusic.browse.allTracks
+import com.pluckcode.tvmusic.browse.cachedTracks
 import com.pluckcode.tvmusic.browse.browserFor
 import com.pluckcode.tvmusic.data.Source
 import com.pluckcode.tvmusic.data.SourceStore
@@ -73,7 +73,7 @@ fun HomeScreen(player: Player?, onOpen: (Source) -> Unit, onEdit: (Source) -> Un
                 for (s in sources) {
                     val before = items.size
                     try {
-                        browserFor(ctx, s).allTracks { onFound(before + it) }.mapTo(items) { it.toMediaItem(s.displayName) }
+                        cachedTracks(ctx, s) { onFound(before + it) }.mapTo(items) { it.toMediaItem(s.displayName) }
                     } catch (e: CancellationException) {
                         throw e
                     } catch (e: Exception) {

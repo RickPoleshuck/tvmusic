@@ -8,6 +8,7 @@ import android.provider.DocumentsContract
 import android.provider.MediaStore
 import com.pluckcode.tvmusic.data.Source
 import com.pluckcode.tvmusic.data.SourceType
+import com.pluckcode.tvmusic.data.TrackCache
 import com.pluckcode.tvmusic.net.Connections
 import com.hierynomus.msfscc.FileAttributes
 import com.hierynomus.protocol.commons.EnumWithValue
@@ -61,6 +62,24 @@ suspend fun Browser.allTracks(path: String = "", onFound: (Int) -> Unit = {}): L
     }
     walk(path, 0)
     return out
+}
+
+/**
+ * Like [allTracks] for [path] of [source], but answers straight from [TrackCache] when it has that
+ * folder, so repeat shuffles start at once. A cached answer is then rescanned in the background, so
+ * newly added music shows up the next time.
+ */
+suspend fun cachedTracks(ctx: Context, source: Source, path: String = "", onFound: (Int) -> Unit = {}): List<Entry> {
+    val app = ctx.applicationContext
+    val cached = withContext(Dispatchers.IO) { TrackCache.get(source.id, path) }
+    if (cached != null) {
+        onFound(cached.size)
+        TrackCache.refresh(source.id, path) { browserFor(app, source).allTracks(path) }
+        return cached
+    }
+    val tracks = browserFor(app, source).allTracks(path, onFound)
+    withContext(Dispatchers.IO) { TrackCache.put(source.id, path, tracks) }
+    return tracks
 }
 
 fun browserFor(ctx: Context, source: Source): Browser = when (source.type) {

@@ -46,10 +46,11 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import com.pluckcode.tvmusic.browse.Entry
-import com.pluckcode.tvmusic.browse.allTracks
+import com.pluckcode.tvmusic.browse.cachedTracks
 import com.pluckcode.tvmusic.browse.browserFor
 import com.pluckcode.tvmusic.data.PlayHistory
 import com.pluckcode.tvmusic.data.Source
+import com.pluckcode.tvmusic.data.TrackCache
 import com.pluckcode.tvmusic.net.describe
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -146,10 +147,10 @@ fun BrowseScreen(source: Source, player: Player?, onPlaying: () -> Unit) {
                             }
                             if (l.entries.any { it.isDir }) {
                                 ShuffleAllButton("Shuffle everything here", player, onPlaying) { onFound ->
-                                    browser.allTracks(crumb.path, onFound).map { it.toMediaItem(crumb.name) }
+                                    cachedTracks(ctx, source, crumb.path, onFound).map { it.toMediaItem(crumb.name) }
                                 }
                             }
-                            TvButton("Refresh", { PlayHistory.clearAll(); crumb.returnIndex = 0; reload++ }, icon = Icons.Filled.Refresh)
+                            TvButton("Refresh", { PlayHistory.clearAll(); TrackCache.clear(source.id); crumb.returnIndex = 0; reload++ }, icon = Icons.Filled.Refresh)
                         }
                     }
                     if (l.entries.isEmpty()) item { Text("No folders or audio files here.") }

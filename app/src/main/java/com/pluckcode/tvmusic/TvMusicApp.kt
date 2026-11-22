@@ -3,6 +3,7 @@ package com.pluckcode.tvmusic
 import android.app.Application
 import com.pluckcode.tvmusic.data.PlayHistory
 import com.pluckcode.tvmusic.data.SourceStore
+import com.pluckcode.tvmusic.data.TrackCache
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.security.Security
 
@@ -15,5 +16,6 @@ class TvMusicApp : Application() {
         Security.addProvider(BouncyCastleProvider())
         SourceStore.init(this)
         PlayHistory.init(this)
+        TrackCache.init(this)
     }
 }
