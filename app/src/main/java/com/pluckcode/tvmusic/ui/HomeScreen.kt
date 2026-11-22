@@ -63,7 +63,9 @@ fun SourceType.icon() = when (this) {
 fun HomeScreen(player: Player?, onOpen: (Source) -> Unit, onEdit: (Source) -> Unit, onPlaying: () -> Unit) {
     val ctx = LocalContext.current
     val saved by SourceStore.sources.collectAsState()
-    val sources = listOf(Source.LIBRARY) + saved
+    val lastUsed by SourceStore.lastUsed.collectAsState()
+    // Most recently opened first; never-opened ones keep their usual order after those.
+    val sources = (listOf(Source.LIBRARY) + saved).sortedByDescending { lastUsed[it.id] ?: 0L }
     val first = remember { FocusRequester() }
     LaunchedEffect(Unit) { runCatching { first.requestFocus() } }
 
@@ -100,7 +102,7 @@ fun HomeScreen(player: Player?, onOpen: (Source) -> Unit, onEdit: (Source) -> Un
         LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             itemsIndexed(sources, key = { _, s -> s.id }) { i, s ->
                 TvCard(
-                    onClick = { onOpen(s) },
+                    onClick = { SourceStore.markUsed(s.id); onOpen(s) },
                     modifier = Modifier.fillMaxWidth().let { if (i == 0) it.focusRequester(first) else it },
                 ) {
                     Icon(s.type.icon(), null, Modifier.size(32.dp))

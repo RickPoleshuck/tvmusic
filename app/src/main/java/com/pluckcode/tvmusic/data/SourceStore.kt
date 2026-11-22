@@ -22,13 +22,26 @@ import javax.crypto.spec.GCMParameterSpec
 object SourceStore {
     private const val PREFS = "sources"
     private const val KEY = "sources_v1"
+    private const val LAST_USED = "last_used_"
     private lateinit var prefs: SharedPreferences
     private val _sources = MutableStateFlow<List<Source>>(emptyList())
     val sources: StateFlow<List<Source>> = _sources
+    private val _lastUsed = MutableStateFlow<Map<String, Long>>(emptyMap())
+    /** When each source (by ID, including [Source.LIBRARY]) was last opened. Not secret, so stored unencrypted. */
+    val lastUsed: StateFlow<Map<String, Long>> = _lastUsed
 
     fun init(ctx: Context) {
         prefs = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         _sources.value = load()
+        _lastUsed.value = prefs.all.entries
+            .filter { it.key.startsWith(LAST_USED) && it.value is Long }
+            .associate { it.key.removePrefix(LAST_USED) to it.value as Long }
+    }
+
+    fun markUsed(id: String) {
+        val now = System.currentTimeMillis()
+        _lastUsed.value = _lastUsed.value + (id to now)
+        prefs.edit().putLong(LAST_USED + id, now).apply()
     }
 
     fun get(id: String): Source? =
@@ -48,6 +61,8 @@ object SourceStore {
         val list = _sources.value.filterNot { it.id == id }
         _sources.value = list
         save(list)
+        _lastUsed.value = _lastUsed.value - id
+        prefs.edit().remove(LAST_USED + id).apply()
     }
 
     private fun load(): List<Source> {
