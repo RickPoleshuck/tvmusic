@@ -1,7 +1,9 @@
 package com.pluckcode.tvmusic.ui
 
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -95,7 +97,12 @@ fun EditSourceScreen(initial: Source, onDone: () -> Unit) {
         ctx.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
         d = d.copy(treeUri = uri.toString(), path = "", name = d.name.ifBlank { uri.lastPathSegment?.substringAfterLast(':') ?: "" })
     }
-    fun launchSafely(block: () -> Unit) = try { block() } catch (_: ActivityNotFoundException) {
+    fun launchSafely(block: () -> Unit) = try {
+        if (!hasRealHandler(ctx, Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*"))) {
+            throw ActivityNotFoundException()
+        }
+        block()
+    } catch (_: ActivityNotFoundException) {
         status = "This TV has no file picker. Paste the key or generate one instead."
     }
 
@@ -174,7 +181,10 @@ fun EditSourceScreen(initial: Source, onDone: () -> Unit) {
                 })
                 TvButton("Choose folder…", {
                     // Many TVs ship without the system folder picker; fall back to choosing from the media library.
-                    try { folderPicker.launch(null) } catch (_: ActivityNotFoundException) { showFolderFallback = true }
+                    try {
+                        if (hasRealHandler(ctx, Intent(Intent.ACTION_OPEN_DOCUMENT_TREE))) folderPicker.launch(null)
+                        else showFolderFallback = true
+                    } catch (_: ActivityNotFoundException) { showFolderFallback = true }
                 }, icon = Icons.Filled.FileOpen)
             }
             SourceType.LIBRARY -> {}
@@ -322,3 +332,13 @@ private fun Field(
         )
     }
 }
+
+/**
+ * Whether some app can really handle [intent]. Android TV ships placeholder activities that claim the
+ * file and folder picker intents but only show "You don't have an app that can do this", so they don't count.
+ */
+private fun hasRealHandler(ctx: Context, intent: Intent): Boolean =
+    ctx.packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
+        .any { it.activityInfo.packageName !in PICKER_STUBS }
+
+private val PICKER_STUBS = setOf("com.android.tv.frameworkpackagestubs")
