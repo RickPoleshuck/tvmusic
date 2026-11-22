@@ -19,6 +19,7 @@ import com.google.common.util.concurrent.ListenableFuture
 /** Owns the player so the remote's media keys work. */
 class PlaybackService : MediaSessionService() {
     private var session: MediaSession? = null
+    private var prefetcher: Prefetcher? = null
 
     @OptIn(UnstableApi::class)
     override fun onCreate() {
@@ -57,6 +58,8 @@ class PlaybackService : MediaSessionService() {
             }
         })
 
+        prefetcher = Prefetcher(this, player)
+
         session = MediaSession.Builder(this, player)
             .setCallback(object : MediaSession.Callback {
                 // Controllers don't send a MediaItem's URI across processes; restore it from requestMetadata.
@@ -79,6 +82,8 @@ class PlaybackService : MediaSessionService() {
     }
 
     override fun onDestroy() {
+        prefetcher?.release()
+        prefetcher = null
         session?.run {
             player.release()
             release()

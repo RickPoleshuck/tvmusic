@@ -23,28 +23,53 @@ import java.io.IOException
 import java.io.InputStream
 import java.util.EnumSet
 
-/** Hands sftp:// and smb:// URIs to our own readers and everything else (content://, file://) to ExoPlayer's default. */
+/**
+ * Hands sftp:// and smb:// URIs to our own readers, through [AudioCache], and everything else
+ * (content://, file://) to ExoPlayer's default.
+ */
 class RoutingDataSourceFactory(context: Context) : DataSource.Factory {
     private val default = DefaultDataSource.Factory(context)
-    override fun createDataSource(): DataSource = RoutingDataSource(default.createDataSource())
+    private val remote = AudioCache.dataSourceFactory(context)
+    override fun createDataSource(): DataSource = RoutingDataSource(remote.createDataSource(), default.createDataSource())
 }
 
-private class RoutingDataSource(private val fallback: DataSource) : DataSource {
-    private val listeners = mutableListOf<TransferListener>()
+/** Our own SFTP / SMB readers, without caching. */
+class RemoteDataSourceFactory : DataSource.Factory {
+    override fun createDataSource(): DataSource = object : DataSource {
+        private var current: DataSource? = null
+        private val listeners = mutableListOf<TransferListener>()
+
+        override fun addTransferListener(transferListener: TransferListener) { listeners += transferListener }
+
+        override fun open(dataSpec: DataSpec): Long {
+            val ds = when (dataSpec.uri.scheme) {
+                "sftp" -> SftpDataSource()
+                "smb" -> SmbDataSource()
+                else -> throw IOException("Not a remote uri: ${dataSpec.uri}")
+            }
+            listeners.forEach(ds::addTransferListener)
+            current = ds
+            return ds.open(dataSpec)
+        }
+
+        override fun read(buffer: ByteArray, offset: Int, length: Int) = current!!.read(buffer, offset, length)
+        override fun getUri(): Uri? = current?.uri
+        override fun close() {
+            try { current?.close() } finally { current = null }
+        }
+    }
+}
+
+private class RoutingDataSource(private val remote: DataSource, private val fallback: DataSource) : DataSource {
     private var current: DataSource? = null
 
     override fun addTransferListener(transferListener: TransferListener) {
-        listeners += transferListener
+        remote.addTransferListener(transferListener)
         fallback.addTransferListener(transferListener)
     }
 
     override fun open(dataSpec: DataSpec): Long {
-        val ds = when (dataSpec.uri.scheme) {
-            "sftp" -> SftpDataSource()
-            "smb" -> SmbDataSource()
-            else -> fallback
-        }
-        if (ds !== fallback) listeners.forEach(ds::addTransferListener)
+        val ds = if (isRemote(dataSpec.uri)) remote else fallback
         current = ds
         return ds.open(dataSpec)
     }
