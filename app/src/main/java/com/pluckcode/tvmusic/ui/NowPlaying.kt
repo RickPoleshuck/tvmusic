@@ -50,6 +50,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.C
 import androidx.media3.common.Player
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.delay
 
 data class PlayerSnapshot(
@@ -144,6 +146,21 @@ private fun Artwork(data: ByteArray?, size: Int) {
     }
 }
 
+private val clockFormat = DateTimeFormatter.ofPattern("HH:mm")
+
+/** Current time as HH:mm, ticking over on each minute boundary. */
+@Composable
+private fun Clock(modifier: Modifier = Modifier) {
+    var now by remember { mutableStateOf(LocalTime.now()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            now = LocalTime.now()
+            delay(60_000 - System.currentTimeMillis() % 60_000)
+        }
+    }
+    Text(now.format(clockFormat), modifier, style = MaterialTheme.typography.titleLarge)
+}
+
 @Composable
 fun NowPlayingScreen(s: PlayerSnapshot, player: Player?) {
     val playFocus = remember { FocusRequester() }
@@ -198,7 +215,11 @@ fun NowPlayingScreen(s: PlayerSnapshot, player: Player?) {
         }
 
         Column(Modifier.weight(1f).fillMaxHeight()) {
-            Text("Up next", style = MaterialTheme.typography.titleLarge)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Up next", style = MaterialTheme.typography.titleLarge)
+                Spacer(Modifier.weight(1f))
+                Clock()
+            }
             Spacer(Modifier.height(10.dp))
             val listState = rememberLazyListState()
             LaunchedEffect(s.index) { if (s.queue.isNotEmpty()) listState.animateScrollToItem((s.index - 1).coerceAtLeast(0)) }
